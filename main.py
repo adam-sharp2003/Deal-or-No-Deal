@@ -48,12 +48,12 @@ Please enter your choice: """)
             for n in range(12): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}") #list of boxes
             pbnum = input("Choose your box: ")
             while pbnum.isdigit() is False or int(pbnum) not in nums: pbnum = input("Choose a valid box: ")
-            pbox, pboxint, opened[int(pbnum)-1], pround, dealmade = boxes[int(pbnum)-1], intboxes[int(pbnum)-1], "Selected", 1, 0
+            pbox, pboxint, opened[int(pbnum)-1], pround, dealmade = intboxes[int(pbnum)-1], intboxes[int(pbnum)-1], "Selected", 1, 0
             while pround <= len(rounds) and dealmade == 0:
                 choice = 1
                 print(f"Round {pround}\nYou will open {rounds[pround]} boxes")
                 while choice <= rounds[pround]:
-                    tab, popen = 1, input("Choose a box to open: ")
+                    popen = input("Choose a box to open: ")
                     while popen.isdigit() is False or popen == pbnum or int(popen) in popened or int(popen) not in nums: popen = input("Choose a box which is valid, unopened and not selected: ")
                     popened.append(int(popen))
                     opened[int(popen)-1], intboxes[int(popen)-1] = boxes[int(popen)-1], 0
@@ -68,9 +68,9 @@ Please enter your choice: """)
                 else: dealmade = 1
                 pround +=1
             if dealmade == 0:
-                print(f"The Final Box had £{sum(intboxes)-pboxint}\nYour box has {pbox}")
+                print(f"The Final Box had {sum(intboxes)-pboxint}" +"\nYour box has £{:,}".format(pbox))
                 bankoffer = pbox
-            print("You won £{:,}".format(bankoffer))
+            print("You won £{:,}".format(pbox))
             if leaderboard[1][leaderboard[0].index(player)] <= bankoffer:
                 leaderboard[1][leaderboard[0].index(player)] = bankoffer
                 print("Personal High Score!")
