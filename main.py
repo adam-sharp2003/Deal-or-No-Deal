@@ -1,5 +1,6 @@
 from datetime import datetime
 import csv, random, math
+gamemode = "a"
 def addnew(pname): #checks if name is in the playertable
     names = []
     with open("players.csv", mode="r+", newline="", encoding="utf-8") as playertable:
@@ -8,15 +9,17 @@ def addnew(pname): #checks if name is in the playertable
         csv.writer(playertable).writerow([pname, 0])
     return pname
 def main():
+    global gamemode
     choice = input("""
-                  Deal Or No Deal
-------------------------------------------------------
-A: Start game
-B: Add player
-C: View game history
-D: Reset Leaderboard (Deletes all players and history)
-Q: Quit
-------------------------------------------------------
+                         Deal Or No Deal
+-------------------------------------------------------------------
+                          A: Start game
+                          B: Add player
+                       C: View game history
+D: Reset Leaderboard (Deletes all players, history, and gamemodes)
+                         E: Custom Games
+                            Q: Quit
+-------------------------------------------------------------------
 Please enter your choice: """)
     if choice.lower() == "a":
         leaderboard, num_rows = [[],[]], 0
@@ -41,11 +44,21 @@ Please enter your choice: """)
                 else: player = 0
         again= "y"
         while again == "y": #loops game
-            opened, nums, rounds, popened = ["Unopened" for n in range(0, 24)], [*range(1,25)], {1:5, 2:3, 3:3, 4:3, 5:3, 6:3, 7:2}, [] 
-            intboxes = [0.01, 0.10, 0.50, 1, 5, 10, 50, 100, 250, 500, 400, 500, 750, 1000, 3000, 5000, 10000, 15000, 20000, 35000, 50000, 75000, 100000, 250000]
+            for row in csv.reader(open("gamemodes.csv", newline="", encoding="utf-8")):
+                if row[0] == gamemode:
+                    intboxes = [float(x) for x in row[1:-2]]
+                    places = int(row[-2])
+            opened, nums, rounds, popened = ["Unopened" for n in range(0, len(intboxes))], [*range(1,len(intboxes)+1)], dict(list(enumerate(([5 if len(intboxes)-2 > 5 else len(intboxes)-2,
+                3 if len(intboxes)-2 > 8 else (len(intboxes)-6 if len(intboxes)-6 > 0 else 0),
+                3 if len(intboxes)-2 > 11 else (len(intboxes)-9 if len(intboxes)-9 > 0 else 0),
+                3 if len(intboxes)-2 > 14 else (len(intboxes)-12 if len(intboxes)-12 > 0 else 0),
+                3 if len(intboxes)-2 > 17 else (len(intboxes)-15 if len(intboxes)-15 > 0 else 0),
+                3 if len(intboxes)-2 > 20 else (len(intboxes)-18 if len(intboxes)-18 > 0 else 0),
+                2 if len(intboxes)-2 > 22 else (len(intboxes)-21 if len(intboxes)-21 > 0 else 0),
+                ]), 1))), [] 
             random.shuffle(intboxes)
             boxes = ["£{:,.2f}".format(m) if m<100 else "£{:,}".format(m) for m in intboxes] #creates the string versions
-            for n in range(12): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}") #list of boxes
+            for n in range(int(len(intboxes)/(2 if 12 in nums else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}" if 12 in nums else f"{nums[n]}: {opened[n]}") #list of boxes
             pbnum = input("Choose your box: ")
             while pbnum.isdigit() is False or int(pbnum) not in nums: pbnum = input("Choose a valid box: ")
             pbox, pboxint, opened[int(pbnum)-1], pround, dealmade = intboxes[int(pbnum)-1], intboxes[int(pbnum)-1], "Selected", 1, 0
@@ -57,11 +70,11 @@ Please enter your choice: """)
                     while popen.isdigit() is False or popen == pbnum or int(popen) in popened or int(popen) not in nums: popen = input("Choose a box which is valid, unopened and not selected: ")
                     popened.append(int(popen))
                     opened[int(popen)-1], intboxes[int(popen)-1] = boxes[int(popen)-1], 0
-                    for n in range(12): print(f"{nums[n]}: {opened[n]}  \t{nums[n+12]}: {opened[n+12]}")
+                    for n in range(int(len(intboxes)/(2 if 12 in nums else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}" if 12 in nums else f"{nums[n]}: {opened[n]}") #list of boxes
                     choice +=1
                 bankoffer = 0
                 for n in range(len(intboxes)): bankoffer += intboxes[n]**2
-                bankoffer = round(math.sqrt(bankoffer/(len(intboxes)-intboxes.count(0)))/100)*100
+                bankoffer = round(math.sqrt(bankoffer/(len(intboxes)-intboxes.count(0)))/places)*places
                 deal = input("The Banker has called.\nHe offers £{:,}.\nDeal or No Deal? (d/n): ".format(bankoffer))
                 while deal not in ("d","n"): deal = input("Enter either d/n: ")
                 if deal == "n": print("The game continues.")
@@ -70,7 +83,7 @@ Please enter your choice: """)
             if dealmade == 0:
                 print(f"The Final Box had {sum(intboxes)-pboxint}" +"\nYour box has £{:,}".format(pbox))
                 bankoffer = pbox
-            print("You won £{:,}".format(pbox))
+            print("You won £{:,}".format(bankoffer))
             if leaderboard[1][leaderboard[0].index(player)] <= bankoffer:
                 leaderboard[1][leaderboard[0].index(player)] = bankoffer
                 print("Personal High Score!")
@@ -87,10 +100,36 @@ Please enter your choice: """)
         if input("Are you sure? (y/n) ").lower() == "y":
             csv.writer(open("players.csv", mode="w", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
             csv.writer(open("history.csv", mode="w", newline="", encoding="utf-8")).writerow(["Date","\t\tScore"," "])
+            csv.writer(open("gamemodes.csv", mode="w", newline="", encoding="utf-8")).writerow(["a",0.01,0.10,0.50,1,5,10,50,100,250,500,400,500,750,1000,3000,5000,10000,15000,20000,35000,50000,75000,100000,250000,100,"Default"])
             print("\nLeaderboard RESET")
         else: print("\nLeaderboard NOT RESET")
+    elif choice.lower() == "e":
+        gamemodes,alphabet = [], next(csv.reader(open("alphabet.csv", newline="", encoding="utf-8")))
+        for row in csv.reader(open("gamemodes.csv", newline="", encoding="utf-8")):
+            print(f"{row[0].upper()}: {row[-1]}")
+            gamemodes.append(row[0])
+        gamemode = input(f"{alphabet[len(gamemodes)].upper()}: New\nSelect Game Mode:")
+        if gamemode.lower() == alphabet[len(gamemodes)]:
+            money, mend, name, place = [], 0 ,input("Gamemode Name? "), 1
+            print("Input the prizes (as numbers). Press q when finshed.")
+            while mend == 0:
+                prize = input()
+                if prize == "q":
+                    if len(money) < 3: print("Input at least 3 prizes")
+                    else: mend = 1
+                elif prize.isdigit() is False: print("Input a number")
+                else: money.append(int(prize))
+            places = input("How many places do you want the banker to round up by?")
+            while places.isdigit() is False: places = input("Input a number")
+            for i in range(int(places)): place *= 10
+            money.insert(0, alphabet[len(gamemodes)])
+            money.extend([place, name])
+            csv.writer(open("gamemodes.csv", mode="a", newline="", encoding="utf-8")).writerow(money)
+        else:
+            while gamemode.lower() not in gamemodes: gamemode = input("Select a valid gamemode")
+        return 0
     elif choice.lower() ==  "q": return 1
-    else: print("You must only select either A,B,C,D, or Q.")
+    else: print("You must only select either A,B,C,D,E, or Q.")
     return 0
 if __name__ == '__main__':
     end = 0
