@@ -1,6 +1,6 @@
 from datetime import datetime
 import csv, random, math
-gamemode = "a"
+gamemode = "b"
 def addnew(pname): #checks if name is in the playertable
     names = []
     with open("players.csv", mode="r+", newline="", encoding="utf-8") as playertable:
@@ -48,17 +48,14 @@ Please enter your choice: """)
                 if row[0] == gamemode:
                     intboxes = [float(x) for x in row[1:-2]]
                     places = int(row[-2])
-            opened, nums, rounds, popened = ["Unopened" for n in range(0, len(intboxes))], [*range(1,len(intboxes)+1)], dict(list(enumerate(([5 if len(intboxes)-2 > 5 else len(intboxes)-2,
-                3 if len(intboxes)-2 > 8 else (len(intboxes)-6 if len(intboxes)-6 > 0 else 0),
-                3 if len(intboxes)-2 > 11 else (len(intboxes)-9 if len(intboxes)-9 > 0 else 0),
-                3 if len(intboxes)-2 > 14 else (len(intboxes)-12 if len(intboxes)-12 > 0 else 0),
-                3 if len(intboxes)-2 > 17 else (len(intboxes)-15 if len(intboxes)-15 > 0 else 0),
-                3 if len(intboxes)-2 > 20 else (len(intboxes)-18 if len(intboxes)-18 > 0 else 0),
-                2 if len(intboxes)-2 > 22 else (len(intboxes)-21 if len(intboxes)-21 > 0 else 0),
-                ]), 1))), [] 
+            length, rounds, listnum = len(intboxes)-2, [5,3,3,3,3,3,2], []
+            for n in range(7):
+                listnum.append(length if length <= rounds[n] else rounds[n])
+                length-=length if length <= rounds[n] else listnum[n]
+            opened, nums, rounds, popened = ["Unopened" for n in range(0, len(intboxes))], [*range(1,len(intboxes)+1)], {key:val for key, val in dict(list(enumerate(listnum, 1))).items() if val != 0}, []
             random.shuffle(intboxes)
-            boxes = ["£{:,.2f}".format(m) if m<100 else "£{:,}".format(m) for m in intboxes] #creates the string versions
-            for n in range(int(len(intboxes)/(2 if 12 in nums else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}" if 12 in nums else f"{nums[n]}: {opened[n]}") #list of boxes
+            boxes = ["£{:,.2f}".format(m) for m in intboxes] #creates the string versions
+            for n in range(int(len(intboxes)/(2 if len(nums)%2 == 0 else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if len(nums)%2 == 0 else f"{nums[n]}: {opened[n]}") #list of boxes
             pbnum = input("Choose your box: ")
             while pbnum.isdigit() is False or int(pbnum) not in nums: pbnum = input("Choose a valid box: ")
             pbox, pboxint, opened[int(pbnum)-1], pround, dealmade = intboxes[int(pbnum)-1], intboxes[int(pbnum)-1], "Selected", 1, 0
@@ -70,7 +67,7 @@ Please enter your choice: """)
                     while popen.isdigit() is False or popen == pbnum or int(popen) in popened or int(popen) not in nums: popen = input("Choose a box which is valid, unopened and not selected: ")
                     popened.append(int(popen))
                     opened[int(popen)-1], intboxes[int(popen)-1] = boxes[int(popen)-1], 0
-                    for n in range(int(len(intboxes)/(2 if 12 in nums else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[n+12]}: {opened[n+12]}" if 12 in nums else f"{nums[n]}: {opened[n]}") #list of boxes
+                    for n in range(int(len(intboxes)/(2 if len(nums)%2 == 0 else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if len(nums)%2 == 0 else f"{nums[n]}: {opened[n]}") #list of boxes
                     choice +=1
                 bankoffer = 0
                 for n in range(len(intboxes)): bankoffer += intboxes[n]**2
@@ -81,9 +78,9 @@ Please enter your choice: """)
                 else: dealmade = 1
                 pround +=1
             if dealmade == 0:
-                print(f"The Final Box had {sum(intboxes)-pboxint}" +"\nYour box has £{:,}".format(pbox))
+                print("The Final Box had £{:,.2f}. ".format(sum(intboxes)-pboxint) +"\nYour box has £{:,.2f}".format(pbox))
                 bankoffer = pbox
-            print("You won £{:,}".format(bankoffer))
+            print("You won £{:,.2f}".format(bankoffer))
             if leaderboard[1][leaderboard[0].index(player)] <= bankoffer:
                 leaderboard[1][leaderboard[0].index(player)] = bankoffer
                 print("Personal High Score!")
@@ -121,7 +118,7 @@ Please enter your choice: """)
                 else: money.append(int(prize))
             places = input("How many places do you want the banker to round up by?")
             while places.isdigit() is False: places = input("Input a number")
-            for i in range(int(places)): place *= 10
+            for i in range(int(places)-1): place *= 10
             money.insert(0, alphabet[len(gamemodes)])
             money.extend([place, name])
             csv.writer(open("gamemodes.csv", mode="a", newline="", encoding="utf-8")).writerow(money)
