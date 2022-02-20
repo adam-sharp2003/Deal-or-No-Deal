@@ -30,8 +30,7 @@ Please enter your choice: """)
                 leaderboard[0].append(row[0])
                 leaderboard[1].append(int(row[1])) #needs to be int for the comparison
                 num_rows += 1
-        if num_rows > 1: leaderboard[0], leaderboard[1] = zip(*sorted(list(zip(leaderboard[0],leaderboard[1])),key=lambda x: x[1], reverse=True)) #creates names and scores lists. the lambda sorts the list by the scores instead of the names
-        for n in range(2): leaderboard[n] = list(leaderboard[n]) 
+        if num_rows > 1: leaderboard[0], leaderboard[1] = zip(*sorted(list(zip(list(leaderboard[0]),list(leaderboard[1]))),key=lambda x: x[1], reverse=True)) #creates names and scores lists. the lambda sorts the list by the scores instead of the names
         for l in range(len(leaderboard[0])): print(leaderboard[0][l] + "\t\t£{:,}".format(leaderboard[1][l]))
         if len(leaderboard[0]) == 0: print("-----------\t-----\n")
         player = 0
