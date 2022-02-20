@@ -100,8 +100,7 @@ Please enter your choice: """)
         for row in csv.reader(open("csv/history.csv", newline="", encoding="utf-8"), delimiter=',', quotechar='|'): print(f"{row[0]}\t{row[1]}{': £' if row[2] != ' ' else ' '}{row[2]}")
     elif choice.lower() == "d":
         if input("Are you sure? (y/n) ").lower() == "y":
-            for filename in glob.glob("csv/players*"):
-                os.remove(filename) 
+            for filename in glob.glob("csv/players*"): os.remove(filename) 
             csv.writer(open(f"csv/playersDefault.csv", mode="w", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
             csv.writer(open("csv/history.csv", mode="w", newline="", encoding="utf-8")).writerow(["Date","\t\tScore"," "])
             csv.writer(open("csv/gamemodes.csv", mode="w", newline="", encoding="utf-8")).writerow(["a",0.01,0.10,0.50,1,5,10,50,100,250,500,400,500,750,1000,3000,5000,10000,15000,20000,35000,50000,75000,100000,250000,100,"Default"])
