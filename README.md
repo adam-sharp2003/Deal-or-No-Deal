@@ -2,4 +2,4 @@
 
 This is a simple game of Deal or No Deal with the highscores, custom games, and previous games being saved to files.
 
-![image](https://user-images.githubusercontent.com/79047247/154846129-7f5509c3-e918-494f-a3ee-b1ecb3cd4809.png)
+![image](https://user-images.githubusercontent.com/79047247/154856164-621e3607-5693-473c-9b44-fd2693c56389.png)
