@@ -101,6 +101,7 @@ Please enter your choice: """)
             csv.writer(open("players.csv", mode="w", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
             csv.writer(open("history.csv", mode="w", newline="", encoding="utf-8")).writerow(["Date","\t\tScore"," "])
             csv.writer(open("gamemodes.csv", mode="w", newline="", encoding="utf-8")).writerow(["a",0.01,0.10,0.50,1,5,10,50,100,250,500,400,500,750,1000,3000,5000,10000,15000,20000,35000,50000,75000,100000,250000,100,"Default"])
+            gamemode = "a"
             print("\nLeaderboard RESET")
         else: print("\nLeaderboard NOT RESET")
     elif choice.lower() == "e":
