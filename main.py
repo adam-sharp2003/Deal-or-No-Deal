@@ -1,6 +1,6 @@
 from datetime import datetime
 import csv, random, math
-gamemode = "b"
+gamemode = "a"
 def addnew(pname): #checks if name is in the playertable
     names = []
     with open("players.csv", mode="r+", newline="", encoding="utf-8") as playertable:
