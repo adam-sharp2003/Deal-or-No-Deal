@@ -48,14 +48,17 @@ Please enter your choice: """)
                 if row[0] == gamemode:
                     intboxes = [float(x) for x in row[1:-2]]
                     places = int(row[-2])
-            length, rounds, listnum = len(intboxes)-2, [5,3,3,3,3,3,2], []
-            for n in range(7):
+            length, rounds, listnum = len(intboxes)-2, [3 for n in range(len(intboxes))], []
+            rounds.insert(0, 5)
+            for n in range(len(rounds)):
                 listnum.append(length if length <= rounds[n] else rounds[n])
                 length-=length if length <= rounds[n] else listnum[n]
             opened, nums, rounds, popened = ["Unopened" for n in range(0, len(intboxes))], [*range(1,len(intboxes)+1)], {key:val for key, val in dict(list(enumerate(listnum, 1))).items() if val != 0}, []
             random.shuffle(intboxes)
-            boxes = ["£{:,.2f}".format(m) for m in intboxes] #creates the string versions
-            for n in range(int(len(intboxes)/(2 if len(nums)%2 == 0 else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if len(nums)%2 == 0 else f"{nums[n]}: {opened[n]}") #list of boxes
+            boxes, boxesLeft = ["£{:,.2f}".format(m) for m in intboxes], len(intboxes) #creates the string versions
+            for n in range(int(len(intboxes)/2)+(1 if len(intboxes)%2 != 0 else 0)):
+                print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if boxesLeft != 1 else f"\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}") #list of boxes
+                boxesLeft -= 2
             pbnum = input("Choose your box: ")
             while pbnum.isdigit() is False or int(pbnum) not in nums: pbnum = input("Choose a valid box: ")
             pbox, pboxint, opened[int(pbnum)-1], pround, dealmade = intboxes[int(pbnum)-1], intboxes[int(pbnum)-1], "Selected", 1, 0
@@ -66,8 +69,10 @@ Please enter your choice: """)
                     popen = input("Choose a box to open: ")
                     while popen.isdigit() is False or popen == pbnum or int(popen) in popened or int(popen) not in nums: popen = input("Choose a box which is valid, unopened and not selected: ")
                     popened.append(int(popen))
-                    opened[int(popen)-1], intboxes[int(popen)-1] = boxes[int(popen)-1], 0
-                    for n in range(int(len(intboxes)/(2 if len(nums)%2 == 0 else 1))): print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if len(nums)%2 == 0 else f"{nums[n]}: {opened[n]}") #list of boxes
+                    opened[int(popen)-1], intboxes[int(popen)-1], boxesLeft = boxes[int(popen)-1], 0, len(intboxes)
+                    for n in range(int(len(intboxes)/2)+(1 if len(intboxes)%2 != 0 else 0)):
+                        print(f"{nums[n]}: {opened[n]}\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}" if boxesLeft != 1 else f"\t{nums[int(n+len(intboxes)/2)]}: {opened[int(n+len(intboxes)/2)]}") #list of boxes
+                        boxesLeft -= 2
                     choice +=1
                 bankoffer = 0
                 for n in range(len(intboxes)): bankoffer += intboxes[n]**2
@@ -77,9 +82,8 @@ Please enter your choice: """)
                 if deal == "n": print("The game continues.")
                 else: dealmade = 1
                 pround +=1
-            if dealmade == 0:
-                print("The Final Box had £{:,.2f}. ".format(sum(intboxes)-pboxint) +"\nYour box has £{:,.2f}".format(pbox))
-                bankoffer = pbox
+            print("The Final Box had £{:,.2f}. ".format(sum(intboxes)-pboxint) +"\nYour box has £{:,.2f}".format(pbox))
+            if dealmade == 0: bankoffer = pbox
             print("You won £{:,.2f}".format(bankoffer))
             if leaderboard[1][leaderboard[0].index(player)] <= bankoffer:
                 leaderboard[1][leaderboard[0].index(player)] = bankoffer
@@ -112,12 +116,12 @@ Please enter your choice: """)
             while mend == 0:
                 prize = input()
                 if prize == "q":
-                    if len(money) < 3: print("Input at least 3 prizes")
+                    if len(money) < 3: print("Input at least 3 prizes. ")
                     else: mend = 1
-                elif prize.isdigit() is False: print("Input a number")
+                elif prize.isdigit() is False: print("Input a number. ")
                 else: money.append(int(prize))
-            places = input("How many places do you want the banker to round up by?")
-            while places.isdigit() is False: places = input("Input a number")
+            places = input("How many places do you want the banker to round up by? ")
+            while places.isdigit() is False: places = input("Input a number. ")
             for i in range(int(places)-1): place *= 10
             money.insert(0, alphabet[len(gamemodes)])
             money.extend([place, name])
