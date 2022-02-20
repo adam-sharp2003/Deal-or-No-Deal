@@ -1,29 +1,31 @@
 from datetime import datetime
-import csv, random, math
+import csv, random, math, os, glob
 gamemode = "a"
+gmName = "Default"
 def addnew(pname): #checks if name is in the playertable
     names = []
-    with open("players.csv", mode="r+", newline="", encoding="utf-8") as playertable:
+    with open(f"csv/players{gmName}.csv", mode="r+", newline="", encoding="utf-8") as playertable:
         for row in csv.reader(playertable): names.append(row[0])
         while pname in names: pname = input("Name already in Leaderboard\nEnter new name: ")
         csv.writer(playertable).writerow([pname, 0])
     return pname
 def main():
     global gamemode
+    global gmName
     choice = input("""
                          Deal Or No Deal
 -------------------------------------------------------------------
                           A: Start game
                           B: Add player
                        C: View game history
-D: Reset Leaderboard (Deletes all players, history, and gamemodes)
+  D: Reset All Data (Deletes all players, history, and gamemodes)
                          E: Custom Games
                             Q: Quit
 -------------------------------------------------------------------
 Please enter your choice: """)
     if choice.lower() == "a":
         leaderboard, num_rows = [[],[]], 0
-        with open("players.csv", mode="r", newline="", encoding="utf-8") as playertable: #prints leaderboard
+        with open(f"csv/players{gmName}.csv", mode="r", newline="", encoding="utf-8") as playertable: #prints leaderboard
             header = next(csv.reader(playertable))
             print(f"{header[0]}\t{header[1]}")
             for row in csv.reader(playertable):
@@ -43,7 +45,7 @@ Please enter your choice: """)
                 else: player = 0
         again= "y"
         while again == "y": #loops game
-            for row in csv.reader(open("gamemodes.csv", newline="", encoding="utf-8")):
+            for row in csv.reader(open("csv/gamemodes.csv", newline="", encoding="utf-8")):
                 if row[0] == gamemode:
                     intboxes = [float(x) for x in row[1:-2]]
                     places = int(row[-2])
@@ -89,29 +91,32 @@ Please enter your choice: """)
                 print("Personal High Score!")
             again = input("Play again? (y/n) ")
             while again not in ("y", "n"): again = input("Play again? (y/n) ")
-        with open("players.csv", mode="w+", newline="", encoding="utf-8") as playertable:
+        with open(f"csv/players{gmName}.csv", mode="w+", newline="", encoding="utf-8") as playertable:
             csv.writer(playertable).writerow(["Player Name","High Score"])
             for i in range(len(leaderboard[0])): csv.writer(playertable).writerow([leaderboard[0][i],leaderboard[1][i]])
-        csv.writer(open("history.csv", mode="a", newline="", encoding="utf-8")).writerow([datetime.now().strftime("%d/%m/%Y %H:%M:%S"), player, bankoffer])
+        csv.writer(open("csv/history.csv", mode="a", newline="", encoding="utf-8")).writerow([datetime.now().strftime("%d/%m/%Y %H:%M:%S"), player, bankoffer])
     elif choice.lower() == "b": addnew(input("What is the player's name? "))
     elif choice.lower() == "c":
-        for row in csv.reader(open("history.csv", newline="", encoding="utf-8"), delimiter=',', quotechar='|'): print(f"{row[0]}\t{row[1]}{': £' if row[2] != ' ' else ' '}{row[2]}")
+        for row in csv.reader(open("csv/history.csv", newline="", encoding="utf-8"), delimiter=',', quotechar='|'): print(f"{row[0]}\t{row[1]}{': £' if row[2] != ' ' else ' '}{row[2]}")
     elif choice.lower() == "d":
         if input("Are you sure? (y/n) ").lower() == "y":
-            csv.writer(open("players.csv", mode="w", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
-            csv.writer(open("history.csv", mode="w", newline="", encoding="utf-8")).writerow(["Date","\t\tScore"," "])
-            csv.writer(open("gamemodes.csv", mode="w", newline="", encoding="utf-8")).writerow(["a",0.01,0.10,0.50,1,5,10,50,100,250,500,400,500,750,1000,3000,5000,10000,15000,20000,35000,50000,75000,100000,250000,100,"Default"])
+            for filename in glob.glob("csv/players*"):
+                os.remove(filename) 
+            csv.writer(open(f"csv/playersDefault.csv", mode="w", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
+            csv.writer(open("csv/history.csv", mode="w", newline="", encoding="utf-8")).writerow(["Date","\t\tScore"," "])
+            csv.writer(open("csv/gamemodes.csv", mode="w", newline="", encoding="utf-8")).writerow(["a",0.01,0.10,0.50,1,5,10,50,100,250,500,400,500,750,1000,3000,5000,10000,15000,20000,35000,50000,75000,100000,250000,100,"Default"])
+            
             gamemode = "a"
             print("\nLeaderboard RESET")
         else: print("\nLeaderboard NOT RESET")
     elif choice.lower() == "e":
-        gamemodes,alphabet = [], next(csv.reader(open("alphabet.csv", newline="", encoding="utf-8")))
-        for row in csv.reader(open("gamemodes.csv", newline="", encoding="utf-8")):
+        gamemodes,alphabet = {}, next(csv.reader(open("csv/alphabet.csv", newline="", encoding="utf-8")))
+        for row in csv.reader(open("csv/gamemodes.csv", newline="", encoding="utf-8")):
             print(f"{row[0].upper()}: {row[-1]}")
-            gamemodes.append(row[0])
+            gamemodes[row[0]] = row[-1]
         gamemode = input(f"{alphabet[len(gamemodes)].upper()}: New\nSelect Game Mode:")
         if gamemode.lower() == alphabet[len(gamemodes)]:
-            money, mend, name, place = [], 0 ,input("Gamemode Name? "), 1
+            money, mend, gmName, place = [], 0 ,input("Gamemode Name? "), 1
             print("Input the prizes (as numbers). Press q when finshed.")
             while mend == 0:
                 prize = input()
@@ -124,10 +129,14 @@ Please enter your choice: """)
             while places.isdigit() is False: places = input("Input a number. ")
             for i in range(int(places)-1): place *= 10
             money.insert(0, alphabet[len(gamemodes)])
-            money.extend([place, name])
-            csv.writer(open("gamemodes.csv", mode="a", newline="", encoding="utf-8")).writerow(money)
+            money.extend([place, gmName])
+            csv.writer(open("csv/gamemodes.csv", mode="a", newline="", encoding="utf-8")).writerow(money)
+            gamemode = alphabet[len(gamemodes)]
+            gamemodes[gamemode] = gmName
+            csv.writer(open(f"csv/players{gmName}.csv", mode="a", newline="", encoding="utf-8")).writerow(["Player Name","High Score"])
         else:
             while gamemode.lower() not in gamemodes: gamemode = input("Select a valid gamemode")
+        gmName = gamemodes[gamemode]
         return 0
     elif choice.lower() ==  "q": return 1
     else: print("You must only select either A,B,C,D,E, or Q.")
